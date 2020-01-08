@@ -7,6 +7,7 @@
 
 from time import sleep
 import RPi.GPIO as GPIO
+import math
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -26,9 +27,17 @@ def setServoAngle(servo, angle):
     pwm.start(8)
     dutyCycle = angle / 18. + 3.
     pwm.ChangeDutyCycle(dutyCycle)
-    sleep(0.3)
+    sleep(0.5)
     pwm.stop()
 
+
+def controlHorizonal(direction, length):
+    r=1
+    angle = (math.pi*r*length)/180
+    setServoAngle(pan, angle)
+    setServoAngle(tilt, -angle)
+    
+    
 
 if __name__ == '__main__':
     for i in range(30, 160, 15):
