@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <title>CASPR Dashboard</title>
+</head>
+<body>
+
+<section class="hero is-warning">
+  <div class="hero-body">
+    <div class="container">
+        <center>
+        <h1 class="title">
+        CASPR
+      </h1>
+      <h2 class="subtitle">
+        CAD-Designed Autonomous Seed Planting Robot
+      </h2>
+        </center>
+    </div>
+  </div>
+</section>
+
+<section class="hero is-light">
+  <div class="hero-body">
+    <div class="container">
+        <center>
+            <h2 class="subtitle">Speed (<span id="outputSpeed"></span>%)</h2>
+            <div class="slidecontainer">
+              <input type="range" min="0" max="100" value="50" step="1" class="slider" id="speedController">
+            </div>
+            <hr>
+            <h2 class="subtitle">Left/Right Direction (<span id="outputDirectionX"></span>°)</h2>
+            <div class="slidecontainer">
+              <input type="range" min="0" max="180" value="90" class="slider" step="1" id="directionControllerX">
+            </div>
+            <hr>
+<!--
+            <h2 class="subtitle">Direction (<span id="outputDirectionY"></span>)</h2>
+            <div class="onoffswitch">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="directionControllerY" checked>
+                <label class="onoffswitch-label" for="myonoffswitch"></label>
+            </div>
+-->
+            <hr>
+        </center>
+    </div>
+  </div>
+</section>
+    
+<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+<script src="../static/js/dashboard.js"></script>
+
+</body>
+</html>

@@ -1,3 +1,6 @@
 RPi.GPIO
 pyserial
 ino
+Flask
+flask-socketio
+eventlet

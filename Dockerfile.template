@@ -25,6 +25,17 @@ RUN curl https://api.github.com/repositories/37727198/releases/latest -s \
 
 # -- End of resin-wifi-connect section -- #
 
+
+#RUN mkdir arduinoInstaller -p > /dev/null
+#RUN wget https://downloads.arduino.cc/arduino-1.8.10-linuxarm.tar.xz -q --show-progress -P arduinoInstaller
+#RUN tar xJf arduinoInstaller/arduino-1.8.10-linuxarm.tar.xz -C arduinoInstaller --strip=1
+#RUN rm arduinoInstaller/arduino-1.8.10-linuxarm.tar.xz > /dev/null
+
+RUN wget https://downloads.arduino.cc/arduino-1.8.10-linuxarm.tar.xz -q --show-progress
+RUN tar -xf arduino-1.8.10-linuxarm.tar.xz
+RUN mv arduino-1.8.10 /opt
+RUN /opt/arduino-1.8.10/install.sh
+
 # pip install python deps from requirements.txt
 # For caching until requirements.txt changes
 COPY ./requirements.txt /requirements.txt
