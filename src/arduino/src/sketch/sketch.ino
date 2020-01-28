@@ -184,9 +184,9 @@ void moveLeftStepper() {
       leftStepperSpeed = newStepperSpeed;
     }
     digitalWrite(leftStepperStepPin, HIGH);
-    delayMicroseconds(leftStepperSpeed);
+    delay(leftStepperSpeed);
     digitalWrite(leftStepperStepPin, LOW);
-    delayMicroseconds(leftStepperSpeed);
+    delay(leftStepperSpeed);
   }
 }
 
@@ -197,8 +197,8 @@ void moveRightStepper() {
       rightStepperSpeed = newStepperSpeed;
     }
     digitalWrite(rightStepperStepPin, HIGH);
-    delayMicroseconds(rightStepperSpeed);
+    delay(rightStepperSpeed);
     digitalWrite(rightStepperStepPin, LOW);
-    delayMicroseconds(rightStepperSpeed);
+    delay(rightStepperSpeed);
   }
 }

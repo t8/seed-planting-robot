@@ -1,0 +1,20 @@
+version: '2'
+services:
+  frontend:
+    build: ./src/app
+    depends_on:
+      - motorController
+    privileged: true
+    devices:
+      - "/dev/ttyACM0:/dev/ttyACM0"
+    expose:
+      - "80"
+  motorController:
+    build: ./src
+    privileged: true
+    devices:
+      - "/dev/ttyACM0:/dev/ttyACM0"
+    cap_add:
+      -
+    ports:
+      - "80:80"

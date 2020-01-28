@@ -1,172 +1,106 @@
-# 19 July 2014
+import os
+import time
+import json
+from flask import Flask, render_template, make_response
+from functools import wraps, update_wrapper
+from datetime import datetime
+from flask_socketio import SocketIO, emit
+# from serialCommunicationCommands import * as sCommands
+import serial
 
-# in case any of this upsets Python purists it has been converted from an equivalent JRuby program
-
-# this is designed to work with ... ArduinoPC2.ino ...
-
-# the purpose of this program and the associated Arduino program is to demonstrate a system for sending 
-#   and receiving data between a PC and an Arduino.
-
-# The key functions are:
-#    sendToArduino(str) which sends the given string to the Arduino. The string may 
-#                       contain characters with any of the values 0 to 255
-#
-#    recvFromArduino()  which returns an array. 
-#                         The first element contains the number of bytes that the Arduino said it included in
-#                             message. This can be used to check that the full message was received.
-#                         The second element contains the message as a string
-
-
-# the overall process followed by the demo program is as follows
-#   open the serial connection to the Arduino - which causes the Arduino to reset
-#   wait for a message from the Arduino to give it time to reset
-#   loop through a series of test messages
-#      send a message and display it on the PC screen
-#      wait for a reply and display it on the PC
-
-# to facilitate debugging the Arduino code this program interprets any message from the Arduino
-#    with the message length set to 0 as a debug message which is displayed on the PC screen
-
-# the message to be sent to the Arduino starts with < and ends with >
-#    the message content comprises a string, an integer and a float
-#    the numbers are sent as their ascii equivalents
-#    for example <LED1,200,0.2>
-#    this means set the flash interval for LED1 to 200 millisecs
-#      and move the servo to 20% of its range
-
-# receiving a message from the Arduino involves
-#    waiting until the startMarker is detected
-#    saving all subsequent bytes until the end marker is detected
-
-# NOTES
-#       this program does not include any timeouts to deal with delays in communication
-#
-#       for simplicity the program does NOT search for the comm port - the user must modify the
-#         code to include the correct reference.
-#         search for the lines 
-#               serPort = "/dev/ttyS80"
-#               baudRate = 9600
-#               ser = serial.Serial(serPort, baudRate)
-#
-
-
-#=====================================
-
-#  Function Definitions
-
-#=====================================
 
 def sendToArduino(sendStr):
-  ser.write(sendStr)
+    ser.write(sendStr)
 
 
-#======================================
+# ======================================
 
 def recvFromArduino():
-  global startMarker, endMarker
-  
-  ck = ""
-  x = "z" # any value that is not an end- or startMarker
-  byteCount = -1 # to allow for the fact that the last increment will be one too many
-  
-  # wait for the start character
-  while  ord(x) != startMarker: 
-    x = ser.read()
-  
-  # save data until the end marker is found
-  while ord(x) != endMarker:
-    if ord(x) != startMarker:
-      ck = ck + x 
-      byteCount += 1
-    x = ser.read()
-  
-  return(ck)
+    global startMarker, endMarker
+
+    ck = ""
+    x = "z"  # any value that is not an end- or startMarker
+    byteCount = -1  # to allow for the fact that the last increment will be one too many
+
+    # wait for the start character
+    while ord(x) != startMarker:
+        x = ser.read()
+
+    # save data until the end marker is found
+    while ord(x) != endMarker:
+        if ord(x) != startMarker:
+            ck = ck + x
+            byteCount += 1
+        x = ser.read()
+
+    return (ck)
 
 
-#============================
+# ============================
 
 def waitForArduino():
+    # wait until the Arduino sends 'Arduino Ready' - allows time for Arduino reset
+    # it also ensures that any bytes left over from a previous message are discarded
 
-   # wait until the Arduino sends 'Arduino Ready' - allows time for Arduino reset
-   # it also ensures that any bytes left over from a previous message are discarded
-   
     global startMarker, endMarker
-    
+
     msg = ""
     while msg.find("CASPR Arduino Online") == -1:
 
-      while ser.inWaiting() == 0:
-        pass
-        
-      msg = recvFromArduino()
+        while ser.inWaiting() == 0:
+            pass
 
-      print msg
-      print
-      
-#======================================
-
-def runTest(td):
-  numLoops = len(td)
-  waitingForReply = False
-
-  n = 0
-  while n < numLoops:
-
-    teststr = td[n]
-
-    if waitingForReply == False:
-      sendToArduino(teststr)
-      print "Sent from PC -- LOOP NUM " + str(n) + " TEST STR " + teststr
-      waitingForReply = True
-
-    if waitingForReply == True:
-
-      while ser.inWaiting() == 0:
-        pass
-        
-      dataRecvd = recvFromArduino()
-      print "Reply Received  " + dataRecvd
-      n += 1
-      waitingForReply = False
-
-      print "==========="
-
-    time.sleep(5)
+        msg = recvFromArduino()
+        print(msg)
 
 
-#======================================
+app = Flask(__name__)
+socketio = SocketIO(app)
 
-# THE PROGRAM STARTS HERE
-
-#======================================
-
-import serial
-import time
-
-print
-print
-
-# NOTE the user must ensure that the serial port and baudrate are correct
-serPort = "/dev/ttyACM0"
-baudRate = 9600
-ser = serial.Serial(serPort, baudRate)
-print "Serial port " + serPort + " opened  Baudrate " + str(baudRate)
+global stepperSpeed
+global stepperDirection
 
 
-startMarker = 60
-endMarker = 62
+@socketio.on('updateSettings')  # Decorator to catch an event called "my event":
+def receive(data):  # test_message() is the event callback function.
+    #    print(map(lambda x: x.encode('utf-8'), data))
+    fixedData = json.loads(json.dumps(eval(json.dumps(data))))
+    newSpeed = int(fixedData['stepperSpeed']) * 10
+    print(fixedData["stepperSpeed"])
+    command = "<BOTHSTEP," + str(newSpeed) + ",FOR>"
+    sendToArduino(command)
+    emit('response', {'data': 'got it!'})  # Trigger a new event called "my response"
 
 
-waitForArduino()
+def nocache(view):
+    @wraps(view)
+    def no_cache(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers['Last-Modified'] = datetime.now()
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+        return response
+
+    return update_wrapper(no_cache, view)
 
 
-testData = []
-testData.append("<LEFTSTEP,3000.0,FOR>")
-testData.append("<RIGHTSTEP,3000.0,FOR>")
-testData.append("<HALT,0,ARB>")
-testData.append("<BOTHSTEP,3000.0,BCK>")
-
-runTest(testData)
+@app.route('/')
+@nocache
+def home():
+    return render_template('dashboard.html', speed=0, direction=90)
 
 
-ser.close
+if __name__ == '__main__':
+    serPort = "/dev/ttyACM0"
+    baudRate = 9600
+    SOCKET_SSL_KEY_FILE = 'key.pem'
+    SOCKET_SSL_CERT_FILE = 'cert.pem'
+    ser = serial.Serial(serPort, baudRate)
+    "Serial port " + serPort + " opened  Baudrate " + str(baudRate)
+
+    startMarker = 60
+    endMarker = 62
+
+    waitForArduino()
+    socketio.run(app, host='0.0.0.0', port=80)

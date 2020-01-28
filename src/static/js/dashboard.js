@@ -11,7 +11,7 @@ outputSpeed.innerHTML = speedSlider.value; // Display the default slider value
 outputDirectionX.innerHTML = directionSlider.value;
 
 $(document).ready(function() {
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    let socket = io.connect('http://' + document.domain + ':' + location.port);
     
     socket.on('response', function(msg) {
         console.log("Received Confirmation");
@@ -20,20 +20,22 @@ $(document).ready(function() {
     speedSlider.oninput = function() {
       outputSpeed.innerHTML = this.value;
         updateSettings();
-    }
+    };
 
     directionSlider.oninput = function() {
       outputDirectionX.innerHTML = this.value;
         updateSettings();
-    }
+    };
 
     function updateSettings() {
+        console.log("sending motor instructions");
         socket.emit('updateSettings',
         {
             stepperSpeed: speedSlider.value,
             stepperDirection: directionSlider.value
         });
-    });
+    }
+});
 
 
 // Client Side Javascript to receive numbers.

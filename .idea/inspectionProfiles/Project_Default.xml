@@ -4,13 +4,15 @@
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
-          <list size="6">
+          <list size="8">
             <item index="0" class="java.lang.String" itemvalue="Scrapy" />
             <item index="1" class="java.lang.String" itemvalue="RPi.Gpio" />
             <item index="2" class="java.lang.String" itemvalue="RPi.GPIO" />
             <item index="3" class="java.lang.String" itemvalue="time" />
             <item index="4" class="java.lang.String" itemvalue="serial" />
             <item index="5" class="java.lang.String" itemvalue="pyserial" />
+            <item index="6" class="java.lang.String" itemvalue="eventlet" />
+            <item index="7" class="java.lang.String" itemvalue="gevent" />
           </list>
         </value>
       </option>
