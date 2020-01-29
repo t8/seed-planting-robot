@@ -33,8 +33,8 @@ unsigned long replyToPiinterval = 1000;
 // Motor Settings
 byte leftStepperSpeed;
 byte rightStepperSpeed;
-const byte minStepperSpeed = 2000;
-const byte maxStepperSpeed = 500;
+const byte minStepperSpeed = 0;
+const byte maxStepperSpeed = 1000;
 
 // Servo settings
 Servo auger;

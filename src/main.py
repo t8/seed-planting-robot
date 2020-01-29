@@ -61,15 +61,21 @@ global stepperSpeed
 global stepperDirection
 
 
-@socketio.on('updateSettings')  # Decorator to catch an event called "my event":
+@socketio.on('updateStepperSpeed')  # Decorator to catch an event called "my event":
 def receive(data):  # test_message() is the event callback function.
     #    print(map(lambda x: x.encode('utf-8'), data))
     fixedData = json.loads(json.dumps(eval(json.dumps(data))))
-    newSpeed = int(fixedData['stepperSpeed']) * 10
+    newSpeed = float(fixedData['stepperSpeed'])
     print(fixedData["stepperSpeed"])
     command = "<BOTHSTEP," + str(newSpeed) + ",FOR>"
     sendToArduino(command)
     emit('response', {'data': 'got it!'})  # Trigger a new event called "my response"
+
+
+@socketio.on('halt')
+def haltEverything():
+    sendToArduino("<HALT,0,A>")
+    emit('response', {'data': 'halting now!'})
 
 
 def nocache(view):
@@ -88,7 +94,7 @@ def nocache(view):
 @app.route('/')
 @nocache
 def home():
-    return render_template('dashboard.html', speed=0, direction=90)
+    return render_template('dashboard.html', speed=0, direction=90, seedOutput=1, seedOutputRate=2)
 
 
 if __name__ == '__main__':

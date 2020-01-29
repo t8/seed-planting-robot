@@ -30,7 +30,7 @@
         <center>
             <h2 class="subtitle">Speed (<span id="outputSpeed"></span> milliseconds between steps)</h2>
             <div class="slidecontainer">
-              <input type="range" min="10" max="2" value="9" step="1" class="slider" id="speedController">
+              <input type="range" min="0.5" max="10" value="9" step="0.5" class="slider" id="speedController">
             </div>
             <hr>
             <h2 class="subtitle">Left/Right Direction (<span id="outputDirectionX"></span>°)</h2>
@@ -38,6 +38,30 @@
               <input type="range" min="0" max="180" value="90" class="slider" step="1" id="directionControllerX">
             </div>
             <hr>
+            <div class="columns">
+                <div class="column is-half">
+                    <button id="haltBtn" class="button is-large is-fullwidth is-outline is-warning is-round">HALT</button>
+                </div>
+                <div class="column is-half">
+                    <div class="card">
+                      <div class="card-content">
+                        <p class="title">
+                          {{ seedOutputRate }} / s
+                        </p>
+                        <p class="subtitle">
+                          Seed output rate
+                        </p>
+                      </div>
+                      <footer class="card-footer">
+                        <p class="card-footer-item">
+                          <span class="has-text-warning">
+                            Seed dropped {{ seedOutput }}s ago
+                          </span>
+                        </p>
+                      </footer>
+                    </div>
+                </div>
+            </div>
 <!--
             <h2 class="subtitle">Direction (<span id="outputDirectionY"></span>)</h2>
             <div class="onoffswitch">
@@ -50,7 +74,7 @@
     </div>
   </div>
 </section>
-    
+
 <script
   src="https://code.jquery.com/jquery-3.4.1.min.js"
   integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
