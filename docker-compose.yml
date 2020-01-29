@@ -1,0 +1,20 @@
+version: '2.1'
+services:
+    application:
+      build: ./src
+      privileged: true
+      devices:
+        - "/dev/ttyACM0:/dev/ttyACM0"
+      ports:
+        - "80:80"
+    wifi-connect:
+        build: ./wifi-connect
+        network_mode: "host"
+        labels:
+            io.balena.features.dbus: '1'
+        depends_on:
+            - application
+        cap_add:
+            - NET_ADMIN
+        environment:
+            DBUS_SYSTEM_BUS_ADDRESS: "unix:path=/host/run/dbus/system_bus_socket"

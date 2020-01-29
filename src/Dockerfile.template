@@ -4,25 +4,6 @@ LABEL maintainer="Tate Berenbaum <tate@arceum.co>"
 
 WORKDIR /usr/src/app
 
-# -- Start of resin-wifi-connect section -- #
-
-# Set the device type environment variable using Dockerfile templates
-ENV DEVICE_TYPE=%%RESIN_MACHINE_NAME%%
-
-# Use apt-get to install dependencies
-RUN apt-get update && apt-get install -yq --no-install-recommends \
-    dnsmasq && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install resin-wifi-connect
-RUN curl https://api.github.com/repositories/37727198/releases/latest -s \
-    | grep -hoP 'browser_download_url": "\K.*%%RESIN_ARCH%%\.tar\.gz' \
-    | xargs -n1 curl -Ls \
-    | tar -xvz -C /usr/src/app/
-
-# -- End of resin-wifi-connect section -- #
-
-
 #RUN mkdir arduinoInstaller -p > /dev/null
 #RUN wget https://downloads.arduino.cc/arduino-1.8.10-linuxarm.tar.xz -q --show-progress -P arduinoInstaller
 #RUN tar xJf arduinoInstaller/arduino-1.8.10-linuxarm.tar.xz -C arduinoInstaller --strip=1
@@ -39,16 +20,9 @@ RUN curl https://api.github.com/repositories/37727198/releases/latest -s \
 COPY ./requirements.txt /requirements.txt
 RUN pip install --upgrade pip && pip install -r /requirements.txt
 
-# Installing Local Dashboard Web-Server
-RUN cd /usr/src/app && git clone https://github.com/tbaumer22/caspr-dash.git
-# RUN cd /usr/src/app/caspr-dash/app && python index.py
-
 COPY . ./
-
-RUN tr -d '\r' < start.sh > start.sh
 
 #switch on systemd init system in container
 ENV INITSYSTEM on
 
-# CMD ["bash", "initialize.sh"]
 CMD ["python", "main.py"]
