@@ -1,11 +1,8 @@
-import os
-import time
 import json
 from flask import Flask, render_template, make_response
 from functools import wraps, update_wrapper
 from datetime import datetime
 from flask_socketio import SocketIO, emit
-# from serialCommunicationCommands import * as sCommands
 import serial
 
 
@@ -61,15 +58,14 @@ global stepperSpeed
 global stepperDirection
 
 
-@socketio.on('updateStepperSpeed')  # Decorator to catch an event called "my event":
-def receive(data):  # test_message() is the event callback function.
-    #    print(map(lambda x: x.encode('utf-8'), data))
+@socketio.on('updateStepperSpeed')  # Decorator to catch an event called "updateStepperSpeed":
+def receive(data):  # receive() is the event callback function.
     fixedData = json.loads(json.dumps(eval(json.dumps(data))))
     newSpeed = float(fixedData['stepperSpeed'])
     print(fixedData["stepperSpeed"])
     command = "<BOTHSTEP," + str(newSpeed) + ",FOR>"
     sendToArduino(command)
-    emit('response', {'data': 'got it!'})  # Trigger a new event called "my response"
+    emit('response', {'data': 'got it!'})  # Trigger a new event called "response"
 
 
 @socketio.on('halt')

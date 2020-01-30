@@ -1,8 +1,6 @@
 #include <Servo.h>
 
-/* Example sketch to control a stepper motor with TB6600 stepper motor driver and Arduino without a library: continuous rotation. More info: https://www.makerguides.com */
 // Define motor connections:
-
 #define leftStepperDirPin 6
 #define leftStepperStepPin 7
 
@@ -33,8 +31,8 @@ unsigned long replyToPiinterval = 1000;
 // Motor Settings
 byte leftStepperSpeed;
 byte rightStepperSpeed;
-const byte minStepperSpeed = 0;
-const byte maxStepperSpeed = 1000;
+const byte minStepperSpeed = 4000;
+const byte maxStepperSpeed = 500;
 
 // Servo settings
 Servo auger;
@@ -184,9 +182,9 @@ void moveLeftStepper() {
       leftStepperSpeed = newStepperSpeed;
     }
     digitalWrite(leftStepperStepPin, HIGH);
-    delay(leftStepperSpeed);
+    delayMicroseconds(leftStepperSpeed);
     digitalWrite(leftStepperStepPin, LOW);
-    delay(leftStepperSpeed);
+    delayMicroseconds(leftStepperSpeed);
   }
 }
 
@@ -197,8 +195,8 @@ void moveRightStepper() {
       rightStepperSpeed = newStepperSpeed;
     }
     digitalWrite(rightStepperStepPin, HIGH);
-    delay(rightStepperSpeed);
+    delayMicroseconds(rightStepperSpeed);
     digitalWrite(rightStepperStepPin, LOW);
-    delay(rightStepperSpeed);
+    delayMicroseconds(rightStepperSpeed);
   }
 }
