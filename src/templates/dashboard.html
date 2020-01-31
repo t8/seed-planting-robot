@@ -30,7 +30,7 @@
         <center>
             <h2 class="subtitle">Speed (<span id="outputSpeed"></span> milliseconds between steps)</h2>
             <div class="slidecontainer">
-              <input type="range" min="500" max="4000" value="4000" step="2" class="slider" id="speedController">
+              <input type="range" min="500" max="4000" value="500" step="2" class="slider" id="speedController">
             </div>
             <hr>
             <h2 class="subtitle">Left/Right Direction (<span id="outputDirectionX"></span>°)</h2>
@@ -45,17 +45,15 @@
                 <div class="column is-half">
                     <div class="card">
                       <div class="card-content">
-                        <p class="title">
-                          {{ seedOutputRate }} / s
-                        </p>
-                        <p class="subtitle">
-                          Seed output rate
-                        </p>
+                        <h2 class="subtitle">Seed Output Rate (<span id="outputAugerSpeed"></span>%)</h2>
+                          <div class="slidecontainer">
+                              <input type="range" min="0" max="100" value="50" class="slider" step="1" id="augerSpeedController">
+                          </div>
                       </div>
                       <footer class="card-footer">
                         <p class="card-footer-item">
                           <span class="has-text-green">
-                            Seed dropped {{ seedOutput }}s ago
+                            Number of seeds dropped: {{ seedDropNumber }}
                           </span>
                         </p>
                       </footer>

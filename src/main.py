@@ -110,21 +110,15 @@ def receive(data):  # receive() is the event callback function.
     sendCommands([command])
     emit('response', {'data': 'updated steppers'})  # Trigger a new event called "response"
 
-    
-@socketio.on('updateTurn')
-def updateTurn(data):
-    print("UPDATING TURN")
+
+@socketio.on('updateAuger')
+def updateAuger(data):
     fixedData = parseSocketData(data)
-    speed = fixedData['stepperSpeed']
-    angle = fixedData['stepperAngle']
-    leftStepperSpeed, rightStepperSpeed = stac.calculateStepperSpeedsAtAngle(float(speed), float(angle))
-    print(leftStepperSpeed)
-    str1 = ("<LEFTSTEP," + str(leftStepperSpeed) + ",FOR>")
-    str2 = ("<RIGHTSTEP," + str(rightStepperSpeed) + ",FOR>")
-    commands = [str1, str2]
-    sendCommands(commands)
-    emit('response', {'data': 'updated stepper speed'})  # Trigger a new event called "response"
-    
+    newSpeed = fixedData['augerSpeed']
+    command = "<A, " + str(newSpeed) + ",0>"
+    sendCommands([command])
+    emit('response', {'data': 'updated auger'})  # Trigger a new event called "response"
+
 
 @socketio.on('halt')
 def haltEverything():

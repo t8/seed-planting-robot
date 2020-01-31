@@ -4,8 +4,8 @@ var outputSpeed = document.getElementById("outputSpeed");
 var directionSlider = document.getElementById("directionControllerX");
 var outputDirectionX = document.getElementById("outputDirectionX");
 
-var directionSwitch = document.getElementById("directionControllerY");
-var outputDirectionY = document.getElementById("outputDirectionY");
+var seedOutputRateSlider = document.getElementById("augerSpeedController");
+var outputAugerSpeed = document.getElementById("outputAugerSpeed");
 
 var haltButton = document.getElementById("haltBtn");
 
@@ -33,6 +33,13 @@ $(document).ready(function() {
     directionSlider.oninput = function() {
         outputDirectionX.innerHTML = this.value;
         updateStepperSpeed();
+        waitingForResponse = true;
+        toggleInputs();
+    };
+
+    seedOutputRateSlider.oninput = function() {
+        outputAugerSpeed.innerHTML = this.value;
+        updateAugerSpeed();
         waitingForResponse = true;
         toggleInputs();
     };
@@ -68,12 +75,19 @@ $(document).ready(function() {
         });
     }
 
+    function updateAugerSpeed() {
+        console.log("sending auger instructions");
+        socket.emit('updateAuger', {
+            augerSpeed: seedOutputRateSlider.value
+        });
+    }
+
     function halt() {
         socket.emit('halt');
     }
     
     function toggleInputs() {
-        if (waitingForResponse = true) {
+        if (waitingForResponse === true) {
             speedSlider.disabled = true;
             directionSlider.disabled = true;
         } else {

@@ -147,9 +147,9 @@ void updateMotors() {
 
 // Move the servo if a command was received
 void moveServo() {
-  float newAugerSpeed = newLeftStepperSpeed * 90.0;    // Defaulting to newLeftStepperSpeed because it is the first input from the pi
+  float newAugerSpeed = newLeftStepperSpeed / 100.0 * 180.0;    // Defaulting to newLeftStepperSpeed because it is the first input from the pi
   augerSpeed = newAugerSpeed;
-    auger.write(augerSpeed);
+  auger.write(augerSpeed);
 }
 
 // Move the left stepper motor if a command was received
