@@ -1,9 +1,11 @@
-#include <Servo.h>
-#include <AccelStepper.h>
+#include <Servo.h>             // Servo library dependency
+#include <AccelStepper.h>      // Stepper motor library dependencys
 
+// Define stepper driver GPIO pins
 AccelStepper leftStepper(AccelStepper::DRIVER, 7, 6);
 AccelStepper rightStepper(AccelStepper::DRIVER, 9, 8);
 
+// Define auger GPIO pins
 #define augerPin 5
 
 // Serial Communication Settings
@@ -20,13 +22,13 @@ float newLeftStepperSpeed = 0.0;
 float newRightStepperSpeed = 0.0;
 char dir[buffSize] = {0};
 
-
+// Counter to monitor interpret/response speed
 unsigned long curMillis;
 
 unsigned long prevReplyToPimillis = 0;
 unsigned long replyToPiinterval = 1000;
 
-// Motor Settings
+// Stepper motor Settings
 float leftStepperSpeed;
 float rightStepperSpeed;
 
@@ -38,33 +40,40 @@ byte augerMax = 180;
 byte newAugerSpeed = 90;
 
 void setup() {
+  // Initiate serial communication signal with baud rate @ 9600
     Serial.begin(9600);
     leftStepper.setMaxSpeed(20000.0);
     leftStepper.setAcceleration(1000.0);
     rightStepper.setMaxSpeed(20000.0);
     rightStepper.setAcceleration(1000.0);
     auger.attach(augerPin);
+    // Inform Pi that the Arduino is online and ready to interpret signals
     Serial.println("<CASPR Arduino Online>");
 }
 
+// Controls how servos and stepper motors update their speed:
 void loop() {
+  // Start monitoring uptime
   curMillis = millis();
+  // Checking to see if pi has any new signals
   getDataFromPi();
+  // Update motors to work with the new signal (if there is one)
   updateMotors();
+  // Respond to the pi to verify that the message was received
   replyToPi();
+  // Move the servo to work with the new signal (if there is one)
   moveServo();
 }
 
 void getDataFromPi() {
 
   // receive data from pi and save it into inputBuffer
-
   if (Serial.available() > 0) {
 
     char x = Serial.read();
 
     // the order of these IF clauses is significant
-
+    // looking at start and end markers to determine signal payload
     if (x == endMarker) {
       readInProgress = false;
       newDataFromPi = true;
@@ -105,7 +114,7 @@ void parseData() {
 }
 
 void replyToPi() {
-
+  // Tell pi that the message was received
   if (newDataFromPi) {
     newDataFromPi = false;
     Serial.print("<Msg ");
@@ -120,8 +129,8 @@ void replyToPi() {
   }
 }
 
+// this illustrates using different inputs from the pi to call different functions
 void updateMotors() {
-  // this illustrates using different inputs to call different functions
   if (strcmp(messageFromPi, "L") == 0) {                    // Left stepper control
     moveLeftStepper();
   } else if (strcmp(messageFromPi, "R") == 0) {             // Right stepper control
@@ -132,33 +141,30 @@ void updateMotors() {
     moveLeftStepper();
     moveRightStepper();
   } else if (strcmp(messageFromPi, "H") == 0) {             // Halt
-//    moveLeftStepper();
-//    moveRightStepper();
-//    moveServo();
     return;
   }
 }
 
-
+// Move the servo if a command was received
 void moveServo() {
-  float newAugerSpeed = newLeftStepperSpeed * 90.0;
-  if (augerSpeed != newAugerSpeed && newAugerSpeed >= 0.0 && newAugerSpeed <= 2.0) {
-    augerSpeed = newAugerSpeed;
+  float newAugerSpeed = newLeftStepperSpeed * 90.0;    // Defaulting to newLeftStepperSpeed because it is the first input from the pi
+  augerSpeed = newAugerSpeed;
     auger.write(augerSpeed);
-  }
 }
 
+// Move the left stepper motor if a command was received
 void moveLeftStepper() {
   if (newLeftStepperSpeed != 0) {
-    leftStepperSpeed = newLeftStepperSpeed;
+    leftStepperSpeed = -newLeftStepperSpeed;
     leftStepper.setSpeed(leftStepperSpeed);
     leftStepper.runSpeed();
   }
 }
 
+// Move the right stepper motor if a command was received
 void moveRightStepper() {
   if (newRightStepperSpeed != 0) {
-    rightStepperSpeed = newRightStepperSpeed;
+    rightStepperSpeed = -newRightStepperSpeed;
     rightStepper.setSpeed(rightStepperSpeed);
     rightStepper.runSpeed();
 
