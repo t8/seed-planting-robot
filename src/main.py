@@ -1,16 +1,18 @@
 import json
+import serial
 from flask import Flask, render_template, make_response
 from functools import wraps, update_wrapper
 from datetime import datetime
 from flask_socketio import SocketIO, emit
-import serial
+import stepperTurnAngleCalc as stac
 
 
 def sendToArduino(sendStr):
-    ser.write(sendStr)
+    ser.write(sendStr.encode('ascii'))
 
 
-# ======================================
+# ============================
+
 
 def recvFromArduino():
     global startMarker, endMarker
@@ -35,6 +37,37 @@ def recvFromArduino():
 
 # ============================
 
+
+def sendCommands(td):
+  numLoops = len(td)
+  waitingForReply = False
+
+  n = 0
+  while n < numLoops:
+
+    commandString = td[n]
+
+    if waitingForReply == False:
+      sendToArduino(commandString)
+      print "Sent from PI -- LOOP NUM " + str(n) + " STR " + commandString
+      waitingForReply = True
+
+    if waitingForReply == True:
+
+      while ser.inWaiting() == 0:
+        pass
+        
+      dataRecvd = recvFromArduino()
+      print "Reply Received  " + dataRecvd
+      n += 1
+      waitingForReply = False
+
+      print "==========="
+
+
+# ============================
+
+
 def waitForArduino():
     # wait until the Arduino sends 'Arduino Ready' - allows time for Arduino reset
     # it also ensures that any bytes left over from a previous message are discarded
@@ -51,6 +84,9 @@ def waitForArduino():
         print(msg)
 
 
+# ============================
+        
+        
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -58,20 +94,42 @@ global stepperSpeed
 global stepperDirection
 
 
-@socketio.on('updateStepperSpeed')  # Decorator to catch an event called "updateStepperSpeed":
-def receive(data):  # receive() is the event callback function.
-    fixedData = json.loads(json.dumps(eval(json.dumps(data))))
-    newSpeed = float(fixedData['stepperSpeed'])
-    print(fixedData["stepperSpeed"])
-    command = "<BOTHSTEP," + str(newSpeed) + ",FOR>"
-    sendToArduino(command)
-    emit('response', {'data': 'got it!'})  # Trigger a new event called "response"
+def parseSocketData(data):
+    parsedData = json.loads(json.dumps(eval(json.dumps(data))))
+    print(parsedData)
+    return parsedData    
 
+
+@socketio.on('updateSteppers')  # Decorator to catch an event called "updateStepperSpeed":
+def receive(data):  # receive() is the event callback function.
+    fixedData = parseSocketData(data)
+    newSpeed = fixedData['stepperSpeed']
+    newAngle = fixedData['stepperAngle']
+    leftStepperSpeed, rightStepperSpeed = stac.calculateStepperSpeedsAtAngle(float(newSpeed), float(newAngle))
+    command = "<B," + str(leftStepperSpeed) + "," + str(rightStepperSpeed) + ">"
+    sendCommands([command])
+    emit('response', {'data': 'updated steppers'})  # Trigger a new event called "response"
+
+    
+@socketio.on('updateTurn')
+def updateTurn(data):
+    print("UPDATING TURN")
+    fixedData = parseSocketData(data)
+    speed = fixedData['stepperSpeed']
+    angle = fixedData['stepperAngle']
+    leftStepperSpeed, rightStepperSpeed = stac.calculateStepperSpeedsAtAngle(float(speed), float(angle))
+    print(leftStepperSpeed)
+    str1 = ("<LEFTSTEP," + str(leftStepperSpeed) + ",FOR>")
+    str2 = ("<RIGHTSTEP," + str(rightStepperSpeed) + ",FOR>")
+    commands = [str1, str2]
+    sendCommands(commands)
+    emit('response', {'data': 'updated stepper speed'})  # Trigger a new event called "response"
+    
 
 @socketio.on('halt')
 def haltEverything():
-    sendToArduino("<HALT,0,A>")
-    emit('response', {'data': 'halting now!'})
+    sendCommands(["<H,0,0>"])
+    emit('response', {'data': 'halting now'})
 
 
 def nocache(view):
@@ -96,8 +154,6 @@ def home():
 if __name__ == '__main__':
     serPort = "/dev/ttyACM0"
     baudRate = 9600
-    SOCKET_SSL_KEY_FILE = 'key.pem'
-    SOCKET_SSL_CERT_FILE = 'cert.pem'
     ser = serial.Serial(serPort, baudRate)
     "Serial port " + serPort + " opened  Baudrate " + str(baudRate)
 

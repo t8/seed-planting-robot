@@ -60,3 +60,7 @@
 .onoffswitch-checkbox:checked + .onoffswitch-label:before {
     right: 0px; 
 }
+
+.has-text-green {
+    color: #4CAF50;
+}

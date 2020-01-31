@@ -1,12 +1,8 @@
 #include <Servo.h>
 #include <AccelStepper.h>
 
-// Define motor connections:
-#define leftStepperDirPin 6
-#define leftStepperStepPin 7
-
-#define rightStepperDirPin 8
-#define rightStepperStepPin 9
+AccelStepper leftStepper(AccelStepper::DRIVER, 7, 6);
+AccelStepper rightStepper(AccelStepper::DRIVER, 9, 8);
 
 #define augerPin 5
 
@@ -31,8 +27,8 @@ unsigned long prevReplyToPimillis = 0;
 unsigned long replyToPiinterval = 1000;
 
 // Motor Settings
-int leftStepperSpeed;
-int rightStepperSpeed;
+float leftStepperSpeed;
+float rightStepperSpeed;
 
 // Servo settings
 Servo auger;
@@ -42,21 +38,13 @@ byte augerMax = 180;
 byte newAugerSpeed = 90;
 
 void setup() {
-  Serial.begin(9600);
-
-  // Declare pins as output:
-  pinMode(leftStepperStepPin, OUTPUT);
-  pinMode(leftStepperDirPin, OUTPUT);
-
-  pinMode(rightStepperStepPin, OUTPUT);
-  pinMode(rightStepperDirPin, OUTPUT);
-
-  // Set the spinning direction CW/CCW:
-  digitalWrite(leftStepperDirPin, HIGH);
-  digitalWrite(rightStepperDirPin, HIGH);
-
-  auger.attach(augerPin);
-  Serial.println("<CASPR Arduino Online>");
+    Serial.begin(9600);
+    leftStepper.setMaxSpeed(20000.0);
+    leftStepper.setAcceleration(1000.0);
+    rightStepper.setMaxSpeed(20000.0);
+    rightStepper.setAcceleration(1000.0);
+    auger.attach(augerPin);
+    Serial.println("<CASPR Arduino Online>");
 }
 
 void loop() {
@@ -162,20 +150,17 @@ void moveServo() {
 
 void moveLeftStepper() {
   if (newLeftStepperSpeed != 0) {
-    leftStepperSpeed = (int) newLeftStepperSpeed;
-    digitalWrite(leftStepperStepPin, HIGH);
-    delayMicroseconds(leftStepperSpeed);
-    digitalWrite(leftStepperStepPin, LOW);
-    delayMicroseconds(leftStepperSpeed);
+    leftStepperSpeed = newLeftStepperSpeed;
+    leftStepper.setSpeed(leftStepperSpeed);
+    leftStepper.runSpeed();
   }
 }
 
 void moveRightStepper() {
   if (newRightStepperSpeed != 0) {
-    rightStepperSpeed = (int) newRightStepperSpeed;
-    digitalWrite(rightStepperStepPin, HIGH);
-    delayMicroseconds(rightStepperSpeed);
-    digitalWrite(rightStepperStepPin, LOW);
-    delayMicroseconds(rightStepperSpeed);
+    rightStepperSpeed = newRightStepperSpeed;
+    rightStepper.setSpeed(rightStepperSpeed);
+    rightStepper.runSpeed();
+
   }
 }
