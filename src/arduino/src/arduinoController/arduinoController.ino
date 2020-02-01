@@ -1,5 +1,5 @@
 #include <Servo.h>             // Servo library dependency
-#include <AccelStepper.h>      // Stepper motor library dependencys
+#include <AccelStepper.h>      // Stepper motor library dependencies
 
 // Define stepper driver GPIO pins
 AccelStepper leftStepper(AccelStepper::DRIVER, 7, 6);
@@ -20,6 +20,7 @@ boolean newDataFromPi = false;
 char messageFromPi[buffSize] = {0};
 float newLeftStepperSpeed = 0.0;
 float newRightStepperSpeed = 0.0;
+float newAugerSpeed = 93.6;
 char dir[buffSize] = {0};
 
 // Counter to monitor interpret/response speed
@@ -37,7 +38,7 @@ Servo auger;
 byte augerSpeed;
 byte augerMin = 0;
 byte augerMax = 180;
-byte newAugerSpeed = 90;
+byte augerHaltSpeed = 94;
 
 void setup() {
   // Initiate serial communication signal with baud rate @ 9600
@@ -111,6 +112,8 @@ void parseData() {
   strtokIndx = strtok(NULL, ",");
   newRightStepperSpeed = atof(strtokIndx);     // convert this part to an float
 
+  strtokIndx = strtok(NULL, ",");
+  newAugerSpeed = atof(strtokIndx);     // convert this part to an float
 }
 
 void replyToPi() {
@@ -121,8 +124,10 @@ void replyToPi() {
     Serial.print(messageFromPi);
     Serial.print(" Speeds ");
     Serial.print(newLeftStepperSpeed);
-    Serial.print(" ");
+    Serial.print(", ");
     Serial.print(newRightStepperSpeed);
+    Serial.print(", ");
+    Serial.print(newAugerSpeed);
     Serial.print(" Time ");
     Serial.print(curMillis >> 9); // divide by 512 is approx = half-seconds
     Serial.println(">");
@@ -131,24 +136,27 @@ void replyToPi() {
 
 // this illustrates using different inputs from the pi to call different functions
 void updateMotors() {
-  if (strcmp(messageFromPi, "L") == 0) {                    // Left stepper control
+  if (strcmp(messageFromPi, "B") == 0) {                    // Both stepper control
+    moveLeftStepper();
+    moveRightStepper();
+  } else if (strcmp(messageFromPi, "H") == 0) {             // Halt
+    return;
+  }else if (strcmp(messageFromPi, "L") == 0) {              // Left stepper control
     moveLeftStepper();
   } else if (strcmp(messageFromPi, "R") == 0) {             // Right stepper control
     moveRightStepper();
   } else if (strcmp(messageFromPi, "A") == 0) {             // Auger control
     moveServo();
-  } else if (strcmp(messageFromPi, "B") == 0) {             // Both stepper control
-    moveLeftStepper();
-    moveRightStepper();
-  } else if (strcmp(messageFromPi, "H") == 0) {             // Halt
-    return;
   }
 }
 
 // Move the servo if a command was received
 void moveServo() {
-  float newAugerSpeed = newLeftStepperSpeed / 100.0 * 180.0;    // Defaulting to newLeftStepperSpeed because it is the first input from the pi
-  augerSpeed = newAugerSpeed;
+  if (newAugerSpeed != 93.6) {
+      augerSpeed = newAugerSpeed / 100.0 * 180.0;
+  } else {
+    augerSpeed = newAugerSpeed;
+  }
   auger.write(augerSpeed);
 }
 

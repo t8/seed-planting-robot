@@ -1,11 +1,11 @@
 import json
 import serial
+import RPi.GPIO as GPIO
 from flask import Flask, render_template, make_response
 from functools import wraps, update_wrapper
 from datetime import datetime
 from flask_socketio import SocketIO, emit
 import stepperTurnAngleCalc as stac
-
 
 def sendToArduino(sendStr):
     ser.write(sendStr.encode('ascii'))
@@ -85,14 +85,17 @@ def waitForArduino():
 
 
 # ============================
-        
+    
         
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+prsPin = 24
+
 global stepperSpeed
 global stepperDirection
 
+seedCount = 0
 
 def parseSocketData(data):
     parsedData = json.loads(json.dumps(eval(json.dumps(data))))
@@ -100,30 +103,34 @@ def parseSocketData(data):
     return parsedData    
 
 
-@socketio.on('updateSteppers')  # Decorator to catch an event called "updateStepperSpeed":
+@socketio.on('update')  # Decorator to catch an event called "updateStepperSpeed":
 def receive(data):  # receive() is the event callback function.
     fixedData = parseSocketData(data)
     newSpeed = fixedData['stepperSpeed']
     newAngle = fixedData['stepperAngle']
+    newAugerSpeed = fixedData['augerSpeed']
     leftStepperSpeed, rightStepperSpeed = stac.calculateStepperSpeedsAtAngle(float(newSpeed), float(newAngle))
-    command = "<B," + str(leftStepperSpeed) + "," + str(rightStepperSpeed) + ">"
+    command = "<B," + str(leftStepperSpeed) + "," + str(rightStepperSpeed) + "," + str(newAugerSpeed) + ">"
     sendCommands([command])
-    emit('response', {'data': 'updated steppers'})  # Trigger a new event called "response"
-
-
-@socketio.on('updateAuger')
-def updateAuger(data):
-    fixedData = parseSocketData(data)
-    newSpeed = fixedData['augerSpeed']
-    command = "<A, " + str(newSpeed) + ",0>"
-    sendCommands([command])
-    emit('response', {'data': 'updated auger'})  # Trigger a new event called "response"
+    emit('response')  # Trigger a new event called "response"
 
 
 @socketio.on('halt')
 def haltEverything():
-    sendCommands(["<H,0,0>"])
-    emit('response', {'data': 'halting now'})
+    sendCommands(["<H,0,0,93.6>"])
+    emit('response')
+    
+@socketio.on('checkSeedCount')
+def check():
+    emit('seed', {
+        'response': seedCount
+    })
+
+
+def seedDetectCallback(channel):
+    global seedCount
+    if GPIO.input(channel) == GPIO.HIGH:
+        seedCount += 1
 
 
 def nocache(view):
@@ -146,6 +153,9 @@ def home():
 
 
 if __name__ == '__main__':
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(prsPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(prsPin, GPIO.BOTH, callback=seedDetectCallback)
     serPort = "/dev/ttyACM0"
     baudRate = 9600
     ser = serial.Serial(serPort, baudRate)

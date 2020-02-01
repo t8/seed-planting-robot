@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css">
+    <script src="https://kit.fontawesome.com/af9854accd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="../static/css/style.css">
     <title>CASPR Dashboard</title>
 </head>
@@ -27,48 +28,54 @@
 <section class="hero is-light">
   <div class="hero-body">
     <div class="container">
-        <center>
-            <h2 class="subtitle">Speed (<span id="outputSpeed"></span> milliseconds between steps)</h2>
-            <div class="slidecontainer">
-              <input type="range" min="500" max="4000" value="500" step="2" class="slider" id="speedController">
-            </div>
-            <hr>
-            <h2 class="subtitle">Left/Right Direction (<span id="outputDirectionX"></span>°)</h2>
-            <div class="slidecontainer">
-              <input type="range" min="0" max="180" value="90" class="slider" step="1" id="directionControllerX">
-            </div>
-            <hr>
             <div class="columns">
                 <div class="column is-half">
-                    <button id="haltBtn" class="button is-large is-fullwidth is-outline is-warning is-round">HALT</button>
+                    <button id="haltBtn" class="button is-large is-fullwidth is-warning control-button"><i class="fas fa-hand-paper"></i>&nbsp;<span>HALT ALL SYSTEMS</span></button>
+<!--
+                    <button id="pauseStepBtn" class="button is-large is-fullwidth is-warning control-button"><i class="fas fa-snowplow"></i>&nbsp;<span>PAUSE STEPPER MOTORS</span></button>
+                    <button id="pauseAugerBtn" class="button is-large is-fullwidth is-warning control-button"><i class="fas fa-tree"></i>&nbsp;<span>PAUSE SEED OUTPUT</span></button>
+-->
                 </div>
                 <div class="column is-half">
                     <div class="card">
                       <div class="card-content">
-                        <h2 class="subtitle">Seed Output Rate (<span id="outputAugerSpeed"></span>%)</h2>
+                        <h2 class="subtitle">Left/Right Direction (<span id="outputDirectionX"></span>°)</h2>
+                        <div class="slidecontainer">
+                          <input type="range" min="0" max="180" value="90" class="slider" step="1" id="directionControllerX">
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column is-half">
+                    <div class="card">
+                      <div class="card-content">
+                        <h2 class="subtitle">Speed (<span id="outputSpeed"></span>)</h2>
+                        <div class="slidecontainer">
+                          <input type="range" min="0" max="20000" value="0" step="10" class="slider" id="speedController">
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                <div class="column is-half">
+                    <div class="card">
+                      <div class="card-content">
+                        <h2 class="subtitle">Auger Rotation Rate (<span id="outputAugerSpeed"></span>)</h2>
                           <div class="slidecontainer">
-                              <input type="range" min="0" max="100" value="50" class="slider" step="1" id="augerSpeedController">
+                              <input type="range" min="0" max="104" value="52" class="slider" step="1" id="augerSpeedController">
                           </div>
                       </div>
                       <footer class="card-footer">
                         <p class="card-footer-item">
                           <span class="has-text-green">
-                            Number of seeds dropped: {{ seedDropNumber }}
+                            Number of seeds dropped: <span id="seedCount" class="has-text-bold">0</span>
                           </span>
                         </p>
                       </footer>
                     </div>
                 </div>
             </div>
-<!--
-            <h2 class="subtitle">Direction (<span id="outputDirectionY"></span>)</h2>
-            <div class="onoffswitch">
-                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="directionControllerY" checked>
-                <label class="onoffswitch-label" for="myonoffswitch"></label>
-            </div>
--->
-            <hr>
-        </center>
     </div>
   </div>
 </section>
@@ -78,7 +85,6 @@
   integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
   crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-<script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
 <script src="../static/js/dashboard.js"></script>
 
 </body>

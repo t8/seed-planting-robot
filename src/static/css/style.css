@@ -64,3 +64,11 @@
 .has-text-green {
     color: #4CAF50;
 }
+
+.control-button {
+    margin-bottom: 10px;
+}
+
+.control-button span {
+    font-size: 0.8em;
+}
